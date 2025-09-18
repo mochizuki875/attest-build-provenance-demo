@@ -71,7 +71,7 @@ jobs:
       # subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
       # subject-digest: ${{ steps.push.outputs.digest }}
       subject-name: ${{ needs.build.outputs.image }}
-      subject-digest: ${{ steps.push.outputs.digest }}
+      subject-digest: ${{ needs.build.outputs.digest }}
       push-to-registry: true
 
 
