@@ -60,6 +60,7 @@ jobs:
     permissions:
       id-token: write # for creating OIDC tokens for signing.
       attestations: write
+      packages: write
     runs-on: ubuntu-latest
     steps:
       - name: Generate Provenance by attest-build-provenance
