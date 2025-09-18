@@ -10,7 +10,11 @@ env:
 jobs:
   build:
     permissions:
+      # contents: read
+      # packages: write
+      id-token: write
       contents: read
+      attestations: write
       packages: write
     outputs:
       image: ${{ steps.image.outputs.image }}
@@ -62,7 +66,7 @@ jobs:
           push-to-registry: true
 
 
-  # provenance:
+  # provenance:  # Jobを分ける場合は再度コンテナレジストリへのログインが必要
   #   runs-on: ubuntu-latest
   #   needs: build
   #   permissions:
