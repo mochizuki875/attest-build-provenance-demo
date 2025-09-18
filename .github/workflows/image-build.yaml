@@ -60,6 +60,7 @@ jobs:
     permissions:
       id-token: write # for creating OIDC tokens for signing.
       attestations: write
+      contents: read
       packages: write
     runs-on: ubuntu-latest
     steps:
