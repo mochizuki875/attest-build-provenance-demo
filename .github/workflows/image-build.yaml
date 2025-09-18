@@ -15,7 +15,7 @@ jobs:
     outputs:
       image: ${{ steps.image.outputs.image }}
       digest: ${{ steps.build.outputs.digest }}
-    runs-on: arc-runner-set-arc-container-build-demo
+    runs-on: ubuntu-latest
     steps:
       # - name: Checkout the repository  # docker/build-push-actionでGit Contextを使う場合は不要
       #   uses: actions/checkout@v4
@@ -54,24 +54,49 @@ jobs:
           image_name="${IMAGE_REGISTRY}/${IMAGE_NAME}"
           echo "image=$image_name" >> "$GITHUB_OUTPUT"
 
-  # This step calls the container workflow to generate provenance and push it to the container registry.
+
   provenance:
-    needs: [build]
+    needs: build-image
     permissions:
       id-token: write # for creating OIDC tokens for signing.
       attestations: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Provenance by attest-build-provenance
+        uses: actions/attest-build-provenance@v3  # https://github.com/actions/attest-build-provenance
+        with:
+          # subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          # subject-digest: ${{ steps.push.outputs.digest }}
+          subject-name: ${{ needs.build-image.outputs.image }}
+          subject-digest: ${{ needs.build-image.outputs.image-digest }}
+          push-to-registry: true
+  #     - name: Scan image with Trivy
+  #       uses: aquasecurity/trivy-action@0.28.0  # https://github.com/aquasecurity/trivy-action
+  #       with:
+  #         image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}@${{ needs.build-image.outputs.image-digest }}'
+  #         format: 'table'
+  #         exit-code: '1'
+  #         # ignore-unfixed: true
+  #         severity: 'CRITICAL,HIGH'
 
-      # いらない？
-      # actions: read # for detecting the Github Actions environment.
-      # packages: write # for uploading attestations.
+  # # This step calls the container workflow to generate provenance and push it to the container registry.
+  # provenance:
+  #   needs: [build]
+  #   permissions:
+  #     id-token: write # for creating OIDC tokens for signing.
+  #     attestations: write
 
-    # name: Generate artifact attestation
-    uses: actions/attest-build-provenance@v3  # https://github.com/actions/attest-build-provenance
-    with:
-      # subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-      # subject-digest: ${{ steps.push.outputs.digest }}
-      subject-name: ${{ needs.build.outputs.image }}
-      subject-digest: ${{ needs.build.outputs.digest }}
-      push-to-registry: true
+  #     # いらない？
+  #     # actions: read # for detecting the Github Actions environment.
+  #     # packages: write # for uploading attestations.
+
+  #   # name: Generate artifact attestation
+  #   uses: actions/attest-build-provenance@v3  # https://github.com/actions/attest-build-provenance
+  #   with:
+  #     # subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+  #     # subject-digest: ${{ steps.push.outputs.digest }}
+  #     subject-name: ${{ needs.build.outputs.image }}
+  #     subject-digest: ${{ needs.build.outputs.digest }}
+  #     push-to-registry: true
 
 
